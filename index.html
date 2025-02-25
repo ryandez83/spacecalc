@@ -1,0 +1,1336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Mortgage Analyzer</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            transition: all 0.3s ease;
+        }
+        body {
+            margin: 0;
+            padding: 16px;
+            background-color: #f5f5f7;
+            color: #1d1d1f;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            margin-top: 0;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        h2 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-top: 20px;
+            margin-bottom: 16px;
+        }
+        .form-group {
+            margin-bottom: 16px;
+        }
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #d2d2d7;
+            border-radius: 8px;
+            font-size: 16px;
+            -webkit-appearance: none;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #0071e3;
+            box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.2);
+        }
+        .toggle-container {
+            display: flex;
+            margin-bottom: 16px;
+        }
+        .toggle-btn {
+            flex: 1;
+            padding: 12px;
+            background-color: #f5f5f7;
+            border: 1px solid #d2d2d7;
+            font-size: 14px;
+            text-align: center;
+            cursor: pointer;
+        }
+        .toggle-btn:first-child {
+            border-radius: 8px 0 0 8px;
+        }
+        .toggle-btn:last-child {
+            border-radius: 0 8px 8px 0;
+        }
+        .toggle-btn.active {
+            background-color: #0071e3;
+            color: white;
+            border-color: #0071e3;
+        }
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .checkbox-container input {
+            width: auto;
+            margin-right: 10px;
+        }
+        button {
+            width: 100%;
+            padding: 14px;
+            background-color: #0071e3;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+        button:active {
+            background-color: #0058b0;
+        }
+        .result {
+            margin-top: 24px;
+            padding: 16px;
+            background-color: #f5f5f7;
+            border-radius: 8px;
+            display: none;
+        }
+        .result h3 {
+            margin-top: 0;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        .result-label {
+            font-weight: 500;
+        }
+        .comparison {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid #d2d2d7;
+        }
+        .comparison-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        .hide {
+            display: none;
+        }
+        .show {
+            display: block;
+        }
+        .extra-payment-container {
+            margin-top: 16px;
+        }
+        
+        /* Chart Styles */
+        .chart-container {
+            margin-top: 20px;
+            width: 100%;
+            height: 300px;
+            position: relative;
+        }
+        
+        /* Tab Navigation */
+        .tab-nav {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #d2d2d7;
+        }
+        .tab-btn {
+            padding: 12px 16px;
+            background: transparent;
+            border: none;
+            border-bottom: 3px solid transparent;
+            font-weight: 500;
+            color: #86868b;
+            width: auto;
+            margin-top: 0;
+        }
+        .tab-btn.active {
+            color: #0071e3;
+            border-bottom-color: #0071e3;
+            background: transparent;
+        }
+        
+        /* Scenario Styles */
+        .scenario-selector {
+            display: flex;
+            margin-bottom: 20px;
+            overflow-x: auto;
+            padding-bottom: 5px;
+        }
+        .scenario-btn {
+            padding: 8px 16px;
+            background-color: #f5f5f7;
+            border: 1px solid #d2d2d7;
+            border-radius: 20px;
+            margin-right: 10px;
+            font-size: 14px;
+            white-space: nowrap;
+            width: auto;
+        }
+        .scenario-btn.active {
+            background-color: #0071e3;
+            color: white;
+            border-color: #0071e3;
+        }
+        
+        /* Comparison Table */
+        .compare-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .compare-table th, .compare-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #d2d2d7;
+        }
+        .compare-table th {
+            font-weight: 600;
+            background-color: #f5f5f7;
+        }
+        .compare-table tbody tr:nth-child(even) {
+            background-color: #f9f9fb;
+        }
+        .best-value {
+            background-color: rgba(52, 199, 89, 0.1);
+            font-weight: 500;
+        }
+        
+        /* Analysis Section */
+        .analysis-section {
+            margin-top: 24px;
+            padding: 16px;
+            background-color: #f5f5f7;
+            border-radius: 8px;
+        }
+        .analysis-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-top: 0;
+            margin-bottom: 12px;
+        }
+        .breakeven-chart {
+            width: 100%;
+            height: 250px;
+            margin-top: 16px;
+        }
+        
+        /* Slider styles */
+        .slider-container {
+            margin-top: 20px;
+            padding: 16px;
+            background-color: #f5f5f7;
+            border-radius: 8px;
+        }
+        
+        .slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: #d3d3d3;
+            outline: none;
+            margin: 15px 0;
+        }
+        
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #0071e3;
+            cursor: pointer;
+        }
+        
+        .slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #0071e3;
+            cursor: pointer;
+        }
+        
+        .slider-value {
+            text-align: center;
+            font-weight: 600;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        
+        /* Badge styles */
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+        
+        .badge-best {
+            background-color: #34c759;
+            color: white;
+        }
+        
+        .badge-good {
+            background-color: #5ac8fa;
+            color: white;
+        }
+        
+        /* Space Mode Styles */
+        .space-mode {
+            background-color: #0a0a2a;
+            color: #ffffff;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 800 800"><g fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1"><path d="M769 229L1037 260.9M927 880L731 737 520 660 309 538 40 599 295 764 126.5 879.5 40 599-197 493 102 382-31 229 126.5 79.5-69-63"/><path d="M-31 229L237 261 390 382 731 737M520 660L309 538 295 764 40 599 -197 493 102 382 126.5 879.5 769 229 -31 229 126.5 79.5 309 538 520 660 731 737 927 880L731 737M520 660L309 538 40 599 295 764 126.5 879.5 -69 -63"/><path d="M520 660L309 538 126.5 879.5 769 229 -31 229 126.5 79.5 309 538-197 493 102 382-31 229 126.5 79.5M-69-63"/></g><g fill="rgba(255,255,255,0.8)"><circle cx="769" cy="229" r="1"/><circle cx="539" cy="269" r="0.5"/><circle cx="603" cy="493" r="0.7"/><circle cx="731" cy="737" r="0.5"/><circle cx="520" cy="660" r="0.5"/><circle cx="309" cy="538" r="0.5"/><circle cx="295" cy="764" r="0.8"/><circle cx="40" cy="599" r="0.5"/><circle cx="102" cy="382" r="0.5"/><circle cx="127" cy="80" r="0.5"/><circle cx="370" cy="105" r="0.7"/><circle cx="578" cy="42" r="0.5"/><circle cx="237" cy="261" r="0.5"/><circle cx="390" cy="382" r="0.7"/></g></svg>');
+        }
+        
+        .space-mode .container {
+            background-color: rgba(13, 18, 44, 0.85);
+            color: #ffffff;
+            box-shadow: 0 8px 32px rgba(0, 204, 255, 0.3);
+            border: 1px solid rgba(99, 179, 237, 0.3);
+        }
+        
+        .space-mode input, .space-mode select {
+            background-color: rgba(22, 27, 54, 0.8);
+            border-color: rgba(99, 179, 237, 0.5);
+            color: #ffffff;
+        }
+        
+        .space-mode .toggle-btn {
+            background-color: rgba(22, 27, 54, 0.8);
+            border-color: rgba(99, 179, 237, 0.5);
+            color: #a0aec0;
+        }
+        
+        .space-mode .toggle-btn.active {
+            background-color: rgba(66, 153, 225, 0.8);
+            color: #ffffff;
+        }
+        
+        .space-mode button {
+            background-color: rgba(66, 153, 225, 0.8);
+            box-shadow: 0 0 15px rgba(66, 153, 225, 0.5);
+        }
+        
+        .space-mode .result, 
+        .space-mode .analysis-section,
+        .space-mode .slider-container {
+            background-color: rgba(22, 27, 54, 0.8);
+            border: 1px solid rgba(99, 179, 237, 0.3);
+        }
+        
+        .space-mode .tab-btn.active {
+            color: #63b3ed;
+            border-bottom-color: #63b3ed;
+        }
+        
+        .space-mode .compare-table th {
+            background-color: rgba(22, 27, 54, 0.8);
+            color: #63b3ed;
+        }
+        
+        .space-mode .compare-table tbody tr:nth-child(even) {
+            background-color: rgba(26, 32, 64, 0.8);
+        }
+        
+        .space-mode .best-value {
+            background-color: rgba(72, 187, 120, 0.2);
+        }
+        
+        .space-mode .slider {
+            background: rgba(99, 179, 237, 0.3);
+        }
+        
+        .space-mode .slider::-webkit-slider-thumb {
+            background: rgba(66, 153, 225, 0.8);
+        }
+        
+        .space-mode .slider::-moz-range-thumb {
+            background: rgba(66, 153, 225, 0.8);
+        }
+        
+        .space-mode-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #0071e3;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            z-index: 100;
+        }
+        
+        .space-mode .space-mode-toggle {
+            background-color: rgba(66, 153, 225, 0.8);
+            box-shadow: 0 0 15px rgba(66, 153, 225, 0.5);
+        }
+        
+        /* Star animation */
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.2; }
+            50% { opacity: 1; }
+        }
+        
+        .star {
+            position: absolute;
+            background-color: white;
+            border-radius: 50%;
+        }
+        
+        .star1 { width: 2px; height: 2px; top: 10%; left: 20%; animation: twinkle 3s infinite; }
+        .star2 { width: 3px; height: 3px; top: 25%; left: 45%; animation: twinkle 4s infinite 1s; }
+        .star3 { width: 2px; height: 2px; top: 50%; left: 75%; animation: twinkle 5s infinite 0.5s; }
+        .star4 { width: 1px; height: 1px; top: 75%; left: 10%; animation: twinkle 6s infinite 2s; }
+        .star5 { width: 2px; height: 2px; top: 80%; left: 60%; animation: twinkle 7s infinite 1.5s; }
+        .star6 { width: 3px; height: 3px; top: 30%; left: 80%; animation: twinkle 3.5s infinite 0.7s; }
+        .star7 { width: 1px; height: 1px; top: 40%; left: 30%; animation: twinkle 4.5s infinite 1.2s; }
+        .star8 { width: 2px; height: 2px; top: 65%; left: 40%; animation: twinkle 5.5s infinite 0.3s; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AI Mortgage Analyzer</h1>
+        
+        <div class="tab-nav">
+            <button class="tab-btn active" id="calculator-tab">Calculator</button>
+            <button class="tab-btn" id="compare-tab">Compare Scenarios</button>
+            <button class="tab-btn" id="analysis-tab">AI Analysis</button>
+        </div>
+        
+        <div id="calculator-section" class="tab-section">
+            <div class="scenario-selector">
+                <button class="scenario-btn active" data-scenario="1">Scenario 1</button>
+                <button class="scenario-btn" data-scenario="2">Scenario 2</button>
+                <button class="scenario-btn" data-scenario="3">Scenario 3</button>
+            </div>
+            
+            <div class="form-group">
+                <label for="scenario-name">Scenario Name</label>
+                <input type="text" id="scenario-name" placeholder="e.g., 30-year Fixed, 7/1 ARM">
+            </div>
+            
+            <div class="form-group">
+                <label for="loan-amount">Loan Amount ($)</label>
+                <input type="number" id="loan-amount" value="300000" min="1000" step="1000">
+            </div>
+            
+            <div class="form-group">
+                <label for="interest-rate">Interest Rate (%)</label>
+                <input type="number" id="interest-rate" value="6.5" min="0.1" max="25" step="0.01">
+            </div>
+            
+            <div class="form-group">
+                <label for="loan-term">Loan Term (years)</label>
+                <select id="loan-term">
+                    <option value="30">30 years</option>
+                    <option value="25">25 years</option>
+                    <option value="20">20 years</option>
+                    <option value="15">15 years</option>
+                    <option value="10">10 years</option>
+                    <option value="7">7 years</option>
+                    <option value="5">5 years</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="loan-costs">Loan Costs ($)</label>
+                <input type="number" id="loan-costs" value="3000" min="0" step="100">
+            </div>
+            
+            <div class="form-group">
+                <label for="property-tax">Annual Property Tax ($)</label>
+                <input type="number" id="property-tax" value="3600" min="0" step="100">
+            </div>
+            
+            <div class="form-group">
+                <label for="insurance">Annual Insurance ($)</label>
+                <input type="number" id="insurance" value="1200" min="0" step="100">
+            </div>
+            
+            <div class="form-group">
+                <label>Payment Frequency</label>
+                <div class="toggle-container">
+                    <div class="toggle-btn active" id="monthly-btn">Monthly</div>
+                    <div class="toggle-btn" id="biweekly-btn">Bi-Weekly</div>
+                </div>
+            </div>
+            
+            <div class="form-group" id="extra-payment-toggle">
+                <div class="checkbox-container">
+                    <input type="checkbox" id="extra-payment-checkbox">
+                    <label for="extra-payment-checkbox">Add Extra Payment</label>
+                </div>
+            </div>
+            
+            <div class="form-group extra-payment-container hide" id="extra-payment-container">
+                <label for="extra-payment">Extra Payment Amount ($)</label>
+                <input type="number" id="extra-payment" value="100" min="0" step="10">
+            </div>
+            
+            <button id="calculate-btn">Calculate</button>
+            <button id="save-scenario-btn">Save Scenario</button>
+            
+            <div class="result" id="result">
+                <h3>Payment Summary</h3>
+                <div class="result-item">
+                    <div class="result-label">Monthly Payment:</div>
+                    <div id="monthly-payment">$0</div>
+                </div>
+                <div class="result-item" id="biweekly-payment-container" style="display: none;">
+                    <div class="result-label">Bi-Weekly Payment:</div>
+                    <div id="biweekly-payment">$0</div>
+                </div>
+                
+                <div class="result-item">
+                    <div class="result-label">Principal & Interest:</div>
+                    <div id="principal-interest">$0</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">Property Tax:</div>
+                    <div id="monthly-tax">$0</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">Insurance:</div>
+                    <div id="monthly-insurance">$0</div>
+                </div>
+                
+                <div class="chart-container">
+                    <canvas id="payment-chart"></canvas>
+                </div>
+                
+                <div class="result-item">
+                    <div class="result-label">Total Principal:</div>
+                    <div id="total-principal">$0</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">Total Interest:</div>
+                    <div id="total-interest">$0</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">Total Cost:</div>
+                    <div id="total-cost">$0</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">Total with Loan Costs:</div>
+                    <div id="total-with-costs">$0</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">Loan Payoff Date:</div>
+                    <div id="payoff-date">--</div>
+                </div>
+                
+                <div class="comparison" id="comparison">
+                    <div class="comparison-title">Savings Summary</div>
+                    <div class="result-item">
+                        <div class="result-label">Time Saved:</div>
+                        <div id="time-saved">0 years, 0 months</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Interest Saved:</div>
+                        <div id="interest-saved">$0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="compare-section" class="tab-section hide">
+            <h2>Compare Scenarios</h2>
+            <div id="scenarios-list">
+                <p>No scenarios saved yet. Create and save scenarios in the Calculator tab.</p>
+            </div>
+            
+            <table class="compare-table hide" id="compare-table">
+                <thead>
+                    <tr>
+                        <th>Scenario</th>
+                        <th>Monthly Payment</th>
+                        <th>Interest Rate</th>
+                        <th>Total Cost</th>
+                        <th>Loan Costs</th>
+                    </tr>
+                </thead>
+                <tbody id="compare-table-body">
+                </tbody>
+            </table>
+        </div>
+        
+        <div id="analysis-section" class="tab-section hide">
+            <h2>AI Mortgage Analysis</h2>
+            
+            <div class="slider-container">
+                <label for="stay-duration">Expected Time in Home (years)</label>
+                <div class="slider-value" id="stay-duration-value">7 years</div>
+                <input type="range" min="1" max="30" value="7" class="slider" id="stay-duration">
+            </div>
+            
+            <div id="analysis-content">
+                <p>Please save at least two scenarios to compare in the Calculator tab.</p>
+            </div>
+            
+            <div class="analysis-section hide" id="breakeven-analysis">
+                <h3 class="analysis-title">Breakeven Analysis</h3>
+                <p id="breakeven-text"></p>
+                <div class="breakeven-chart">
+                    <canvas id="breakeven-chart"></canvas>
+                </div>
+            </div>
+            
+            <div class="analysis-section hide" id="recommendation-section">
+                <h3 class="analysis-title">AI Recommendation</h3>
+                <p id="recommendation-text"></p>
+            </div>
+        </div>
+    </div>
+    
+    <button class="space-mode-toggle" id="space-mode-toggle">🚀</button>
+    
+    <div class="star star1"></div>
+    <div class="star star2"></div>
+    <div class="star star3"></div>
+    <div class="star star4"></div>
+    <div class="star star5"></div>
+    <div class="star star6"></div>
+    <div class="star star7"></div>
+    <div class="star star8"></div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tab Navigation
+            const calculatorTab = document.getElementById('calculator-tab');
+            const compareTab = document.getElementById('compare-tab');
+            const analysisTab = document.getElementById('analysis-tab');
+            const calculatorSection = document.getElementById('calculator-section');
+            const compareSection = document.getElementById('compare-section');
+            const analysisSection = document.getElementById('analysis-section');
+            
+            // Scenario Management
+            const scenarioBtns = document.querySelectorAll('.scenario-btn');
+            const scenarioName = document.getElementById('scenario-name');
+            const saveScenarioBtn = document.getElementById('save-scenario-btn');
+            
+            // Duration Slider
+            const stayDuration = document.getElementById('stay-duration');
+            const stayDurationValue = document.getElementById('stay-duration-value');
+            
+            // Form Elements
+            const loanAmount = document.getElementById('loan-amount');
+            const interestRate = document.getElementById('interest-rate');
+            const loanTerm = document.getElementById('loan-term');
+            const loanCosts = document.getElementById('loan-costs');
+            const propertyTax = document.getElementById('property-tax');
+            const insurance = document.getElementById('insurance');
+            const monthlyBtn = document.getElementById('monthly-btn');
+            const biweeklyBtn = document.getElementById('biweekly-btn');
+            const extraPaymentCheckbox = document.getElementById('extra-payment-checkbox');
+            const extraPaymentContainer = document.getElementById('extra-payment-container');
+            const extraPayment = document.getElementById('extra-payment');
+            
+            // Result Elements
+            const calculateBtn = document.getElementById('calculate-btn');
+            const resultContainer = document.getElementById('result');
+            const biweeklyPaymentContainer = document.getElementById('biweekly-payment-container');
+            const monthlyPayment = document.getElementById('monthly-payment');
+            const biweeklyPaymentEl = document.getElementById('biweekly-payment');
+            const principalInterest = document.getElementById('principal-interest');
+            const monthlyTax = document.getElementById('monthly-tax');
+            const monthlyInsurance = document.getElementById('monthly-insurance');
+            const totalPrincipal = document.getElementById('total-principal');
+            const totalInterest = document.getElementById('total-interest');
+            const totalCost = document.getElementById('total-cost');
+            const totalWithCosts = document.getElementById('total-with-costs');
+            const payoffDate = document.getElementById('payoff-date');
+            const timeSaved = document.getElementById('time-saved');
+            const interestSaved = document.getElementById('interest-saved');
+            const comparison = document.getElementById('comparison');
+            
+            // Analysis Elements
+            const analysisContent = document.getElementById('analysis-content');
+            const breakevenAnalysis = document.getElementById('breakeven-analysis');
+            const breakevenText = document.getElementById('breakeven-text');
+            const recommendationSection = document.getElementById('recommendation-section');
+            const recommendationText = document.getElementById('recommendation-text');
+            
+            // Space Mode Toggle
+            const spaceModeToggle = document.getElementById('space-mode-toggle');
+            
+            // Comparison Elements
+            const scenariosList = document.getElementById('scenarios-list');
+            const compareTable = document.getElementById('compare-table');
+            const compareTableBody = document.getElementById('compare-table-body');
+            
+            // Stored scenarios
+            let scenarios = [
+                { id: 1, name: "", data: null },
+                { id: 2, name: "", data: null },
+                { id: 3, name: "", data: null }
+            ];
+            
+            let activeScenario = 1;
+            let isMonthlyPayment = true;
+            
+            // Charts
+            let paymentChart;
+            let breakevenChart;
+            
+            // Add Space Mode Toggle Event Listener
+            spaceModeToggle.addEventListener('click', function() {
+                document.body.classList.toggle('space-mode');
+            });
+            
+            // Toggle extra payment container visibility
+            extraPaymentCheckbox.addEventListener('change', function() {
+                if (this.checked) {
+                    extraPaymentContainer.classList.remove('hide');
+                    extraPaymentContainer.classList.add('show');
+                } else {
+                    extraPaymentContainer.classList.add('hide');
+                    extraPaymentContainer.classList.remove('show');
+                }
+            });
+            
+            // Toggle between monthly and bi-weekly payments
+            monthlyBtn.addEventListener('click', function() {
+                if (!isMonthlyPayment) {
+                    monthlyBtn.classList.add('active');
+                    biweeklyBtn.classList.remove('active');
+                    isMonthlyPayment = true;
+                    
+                    if (resultContainer.style.display !== 'none') {
+                        biweeklyPaymentContainer.style.display = 'none';
+                    }
+                }
+            });
+            
+            biweeklyBtn.addEventListener('click', function() {
+                if (isMonthlyPayment) {
+                    biweeklyBtn.classList.add('active');
+                    monthlyBtn.classList.remove('active');
+                    isMonthlyPayment = false;
+                    
+                    if (resultContainer.style.display !== 'none') {
+                        biweeklyPaymentContainer.style.display = 'flex';
+                    }
+                }
+            });
+            
+            // Update stay duration value display
+            stayDuration.addEventListener('input', function() {
+                stayDurationValue.textContent = this.value + ' years';
+                updateAnalysis();
+            });
+            
+            // Tab Navigation
+            calculatorTab.addEventListener('click', function() {
+                activateTab(calculatorTab, calculatorSection);
+            });
+            
+            compareTab.addEventListener('click', function() {
+                activateTab(compareTab, compareSection);
+                updateComparisonTable();
+            });
+            
+            analysisTab.addEventListener('click', function() {
+                activateTab(analysisTab, analysisSection);
+                updateAnalysis();
+            });
+            
+            function activateTab(tab, section) {
+                // Deactivate all tabs and hide all sections
+                document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+                document.querySelectorAll('.tab-section').forEach(sec => {
+                    sec.classList.add('hide');
+                    sec.classList.remove('show');
+                });
+                
+                // Activate the selected tab and show its section
+                tab.classList.add('active');
+                section.classList.remove('hide');
+                section.classList.add('show');
+            }
+            
+            // Scenario Selection
+            scenarioBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const scenarioId = parseInt(btn.getAttribute('data-scenario'));
+                    selectScenario(scenarioId);
+                });
+            });
+            
+            function selectScenario(id) {
+                // Update active button
+                scenarioBtns.forEach(btn => {
+                    if (parseInt(btn.getAttribute('data-scenario')) === id) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+                
+                activeScenario = id;
+                const scenario = scenarios.find(s => s.id === id);
+                
+                // Load scenario data if it exists
+                if (scenario.name) {
+                    scenarioName.value = scenario.name;
+                    if (scenario.data) {
+                        loanAmount.value = scenario.data.loanAmount;
+                        interestRate.value = scenario.data.interestRate;
+                        loanTerm.value = scenario.data.loanTerm;
+                        loanCosts.value = scenario.data.loanCosts;
+                        propertyTax.value = scenario.data.propertyTax;
+                        insurance.value = scenario.data.insurance;
+                        
+                        if (scenario.data.isMonthlyPayment) {
+                            monthlyBtn.classList.add('active');
+                            biweeklyBtn.classList.remove('active');
+                            isMonthlyPayment = true;
+                        } else {
+                            biweeklyBtn.classList.add('active');
+                            monthlyBtn.classList.remove('active');
+                            isMonthlyPayment = false;
+                        }
+                        
+                        if (scenario.data.extraPayment > 0) {
+                            extraPaymentCheckbox.checked = true;
+                            extraPaymentContainer.classList.remove('hide');
+                            extraPaymentContainer.classList.add('show');
+                            extraPayment.value = scenario.data.extraPayment;
+                        } else {
+                            extraPaymentCheckbox.checked = false;
+                            extraPaymentContainer.classList.add('hide');
+                            extraPaymentContainer.classList.remove('show');
+                            extraPayment.value = 100;
+                        }
+                    }
+                } else {
+                    // Reset form to defaults for new scenario
+                    scenarioName.value = '';
+                    loanAmount.value = 300000;
+                    interestRate.value = 6.5;
+                    loanTerm.value = 30;
+                    loanCosts.value = 3000;
+                    propertyTax.value = 3600;
+                    insurance.value = 1200;
+                    extraPaymentCheckbox.checked = false;
+                    extraPaymentContainer.classList.add('hide');
+                    extraPaymentContainer.classList.remove('show');
+                    extraPayment.value = 100;
+                    monthlyBtn.classList.add('active');
+                    biweeklyBtn.classList.remove('active');
+                    isMonthlyPayment = true;
+                }
+                
+                // Hide results
+                resultContainer.style.display = 'none';
+            }
+            
+            // Calculate button event
+            calculateBtn.addEventListener('click', function() {
+                calculateMortgage();
+            });
+            
+            // Save scenario button event
+            saveScenarioBtn.addEventListener('click', function() {
+                saveScenario();
+            });
+            
+            function calculateMortgage() {
+                const amount = parseFloat(loanAmount.value);
+                const rate = parseFloat(interestRate.value) / 100 / 12;
+                const years = parseInt(loanTerm.value);
+                const months = years * 12;
+                const taxes = parseFloat(propertyTax.value) / 12;
+                const ins = parseFloat(insurance.value) / 12;
+                const costs = parseFloat(loanCosts.value);
+                const isExtraPayment = extraPaymentCheckbox.checked;
+                const extra = isExtraPayment ? parseFloat(extraPayment.value) : 0;
+                
+                // Calculate monthly payment (P&I)
+                const x = Math.pow(1 + rate, months);
+                const monthly = (amount * x * rate) / (x - 1);
+                
+                // Bi-weekly payment is half of monthly payment, but made 26 times a year (equivalent to 13 months)
+                const biweekly = monthly / 2;
+                
+                // Calculate total monthly payment including taxes and insurance
+                const totalMonthly = monthly + taxes + ins;
+                
+                // Format currency
+                const formatter = new Intl.NumberFormat('en-US', {
+                    style: 'currency',
+                    currency: 'USD',
+                    minimumFractionDigits: 2
+                });
+                
+                // Update result elements
+                principalInterest.textContent = formatter.format(monthly);
+                monthlyTax.textContent = formatter.format(taxes);
+                monthlyInsurance.textContent = formatter.format(ins);
+                monthlyPayment.textContent = formatter.format(totalMonthly);
+                biweeklyPaymentEl.textContent = formatter.format(biweekly);
+                
+                if (isMonthlyPayment) {
+                    biweeklyPaymentContainer.style.display = 'none';
+                } else {
+                    biweeklyPaymentContainer.style.display = 'flex';
+                }
+                
+                // Calculate amortization schedule
+                let balance = amount;
+                let totalInterestPaid = 0;
+                let monthsToPayoff = months;
+                
+                // For extra payments
+                if (isExtraPayment && extra > 0) {
+                    for (let i = 0; i < months; i++) {
+                        const interestPayment = balance * rate;
+                        const principalPayment = monthly - interestPayment;
+                        
+                        balance -= (principalPayment + extra);
+                        totalInterestPaid += interestPayment;
+                        
+                        if (balance <= 0) {
+                            monthsToPayoff = i + 1;
+                            break;
+                        }
+                    }
+                } else {
+                    totalInterestPaid = (monthly * months) - amount;
+                }
+                
+                // Calculate total cost
+                const totalPrincipalAmount = amount;
+                const totalInterestAmount = isExtraPayment ? totalInterestPaid : (monthly * months) - amount;
+                const totalCostAmount = totalPrincipalAmount + totalInterestAmount;
+                const totalWithCostsAmount = totalCostAmount + costs;
+                
+                // Update result elements
+                totalPrincipal.textContent = formatter.format(totalPrincipalAmount);
+                totalInterest.textContent = formatter.format(totalInterestAmount);
+                totalCost.textContent = formatter.format(totalCostAmount);
+                totalWithCosts.textContent = formatter.format(totalWithCostsAmount);
+                
+                // Calculate payoff date
+                const today = new Date();
+                let payoffDateObj = new Date(today);
+                
+                if (isMonthlyPayment) {
+                    payoffDateObj.setMonth(today.getMonth() + monthsToPayoff);
+                } else {
+                    // Bi-weekly pays off faster (equivalent to 13 months of payments per year)
+                    const effectiveMonths = Math.ceil(monthsToPayoff * (12/13));
+                    payoffDateObj.setMonth(today.getMonth() + effectiveMonths);
+                }
+                
+                const options = { year: 'numeric', month: 'long', day: 'numeric' };
+                payoffDate.textContent = payoffDateObj.toLocaleDateString(undefined, options);
+                
+                // Show comparison for extra payments
+                if (isExtraPayment && extra > 0) {
+                    const timeSavedMonths = months - monthsToPayoff;
+                    const timeSavedYears = Math.floor(timeSavedMonths / 12);
+                    const remainingMonths = timeSavedMonths % 12;
+                    
+                    timeSaved.textContent = `${timeSavedYears} years, ${remainingMonths} months`;
+                    
+                    const standardInterest = (monthly * months) - amount;
+                    const interestSavedAmount = standardInterest - totalInterestPaid;
+                    interestSaved.textContent = formatter.format(interestSavedAmount);
+                    
+                    comparison.style.display = 'block';
+                } else {
+                    comparison.style.display = 'none';
+                }
+                
+                // Create payment breakdown chart
+                createPaymentChart(totalPrincipalAmount, totalInterestAmount, taxes * months, ins * months);
+                
+                // Show result container
+                resultContainer.style.display = 'block';
+                
+                return {
+                    monthly: monthly,
+                    totalMonthly: totalMonthly,
+                    biweekly: biweekly,
+                    totalPrincipal: totalPrincipalAmount,
+                    totalInterest: totalInterestAmount,
+                    totalCost: totalCostAmount,
+                    totalWithCosts: totalWithCostsAmount,
+                    monthsToPayoff: monthsToPayoff
+                };
+            }
+            
+            function createPaymentChart(principal, interest, tax, insurance) {
+                const ctx = document.getElementById('payment-chart').getContext('2d');
+                
+                if (paymentChart) {
+                    paymentChart.destroy();
+                }
+                
+                paymentChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Principal', 'Interest', 'Property Tax', 'Insurance'],
+                        datasets: [{
+                            data: [principal, interest, tax, insurance],
+                            backgroundColor: [
+                                '#34c759',
+                                '#ff9500',
+                                '#5ac8fa',
+                                '#ff3b30'
+                            ],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const value = context.raw;
+                                        return context.label + ': ' + new Intl.NumberFormat('en-US', {
+                                            style: 'currency',
+                                            currency: 'USD',
+                                            minimumFractionDigits: 0,
+                                            maximumFractionDigits: 0
+                                        }).format(value);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            function saveScenario() {
+                const name = scenarioName.value.trim() || `Scenario ${activeScenario}`;
+                
+                // Calculate results to store
+                const results = calculateMortgage();
+                
+                // Store scenario data
+                scenarios[activeScenario - 1] = {
+                    id: activeScenario,
+                    name: name,
+                    data: {
+                        loanAmount: parseFloat(loanAmount.value),
+                        interestRate: parseFloat(interestRate.value),
+                        loanTerm: parseInt(loanTerm.value),
+                        loanCosts: parseFloat(loanCosts.value),
+                        propertyTax: parseFloat(propertyTax.value),
+                        insurance: parseFloat(insurance.value),
+                        isMonthlyPayment: isMonthlyPayment,
+                        extraPayment: extraPaymentCheckbox.checked ? parseFloat(extraPayment.value) : 0,
+                        results: results
+                    }
+                };
+                
+                // Update scenario button name if provided
+                if (name && name !== `Scenario ${activeScenario}`) {
+                    document.querySelector(`.scenario-btn[data-scenario="${activeScenario}"]`).textContent = name;
+                }
+                
+                // Update comparison table
+                updateComparisonTable();
+                
+                // Update analysis
+                updateAnalysis();
+                
+                // Show confirmation
+                alert(`Scenario "${name}" saved successfully!`);
+            }
+            
+            function updateComparisonTable() {
+                // Check if we have saved scenarios
+                const savedScenarios = scenarios.filter(s => s.data !== null);
+                
+                if (savedScenarios.length === 0) {
+                    scenariosList.innerHTML = '<p>No scenarios saved yet. Create and save scenarios in the Calculator tab.</p>';
+                    compareTable.classList.add('hide');
+                    return;
+                }
+                
+                // Clear previous list
+                scenariosList.innerHTML = '';
+                compareTableBody.innerHTML = '';
+                
+                // Show table
+                compareTable.classList.remove('hide');
+                
+                // Find best values
+                const lowestMonthly = Math.min(...savedScenarios.map(s => s.data.results.totalMonthly));
+                const lowestRate = Math.min(...savedScenarios.map(s => s.data.interestRate));
+                const lowestTotalCost = Math.min(...savedScenarios.map(s => s.data.results.totalWithCosts));
+                const lowestLoanCosts = Math.min(...savedScenarios.map(s => s.data.loanCosts));
+                
+                // Create table rows
+                savedScenarios.forEach(scenario => {
+                    const data = scenario.data;
+                    const row = document.createElement('tr');
+                    
+                    // Scenario name
+                    const nameCell = document.createElement('td');
+                    nameCell.textContent = scenario.name;
+                    row.appendChild(nameCell);
+                    
+                    // Monthly payment
+                    const monthlyCell = document.createElement('td');
+                    const monthlyValue = data.results.totalMonthly;
+                    monthlyCell.textContent = formatCurrency(monthlyValue);
+                    if (monthlyValue === lowestMonthly) {
+                        monthlyCell.classList.add('best-value');
+                    }
+                    row.appendChild(monthlyCell);
+                    
+                    // Interest rate
+                    const rateCell = document.createElement('td');
+                    const rateValue = data.interestRate;
+                    rateCell.textContent = rateValue.toFixed(2) + '%';
+                    if (rateValue === lowestRate) {
+                        rateCell.classList.add('best-value');
+                    }
+                    row.appendChild(rateCell);
+                    
+                    // Total cost
+                    const costCell = document.createElement('td');
+                    const costValue = data.results.totalWithCosts;
+                    costCell.textContent = formatCurrency(costValue);
+                    if (costValue === lowestTotalCost) {
+                        costCell.classList.add('best-value');
+                    }
+                    row.appendChild(costCell);
+                    
+                    // Loan costs
+                    const loanCostsCell = document.createElement('td');
+                    const loanCostsValue = data.loanCosts;
+                    loanCostsCell.textContent = formatCurrency(loanCostsValue);
+                    if (loanCostsValue === lowestLoanCosts) {
+                        loanCostsCell.classList.add('best-value');
+                    }
+                    row.appendChild(loanCostsCell);
+                    
+                    compareTableBody.appendChild(row);
+                });
+            }
+            
+            function updateAnalysis() {
+                // Check if we have at least two saved scenarios
+                const savedScenarios = scenarios.filter(s => s.data !== null);
+                
+                if (savedScenarios.length < 2) {
+                    analysisContent.innerHTML = '<p>Please save at least two scenarios to compare in the Calculator tab.</p>';
+                    breakevenAnalysis.classList.add('hide');
+                    recommendationSection.classList.add('hide');
+                    return;
+                }
+                
+                // Show analysis sections
+                breakevenAnalysis.classList.remove('hide');
+                recommendationSection.classList.remove('hide');
+                
+                // Clear previous content
+                analysisContent.innerHTML = '';
+                
+                // Sort scenarios by total cost
+                const sortedScenarios = [...savedScenarios].sort((a, b) => 
+                    a.data.results.totalWithCosts - b.data.results.totalWithCosts
+                );
+                
+                // Get user's expected stay duration
+                const stayYears = parseInt(stayDuration.value);
+                
+                // Perform breakeven analysis
+                let breakevenHTML = '';
+                
+                // For each pair of scenarios, calculate breakeven point
+                for (let i = 0; i < sortedScenarios.length - 1; i++) {
+                    const lowerCostScenario = sortedScenarios[i];
+                    const higherCostScenario = sortedScenarios[i + 1];
+                    
+                    const monthlyDiff = higherCostScenario.data.results.totalMonthly - 
+                                       lowerCostScenario.data.results.totalMonthly;
+                    
+                    const upfrontDiff = lowerCostScenario.data.loanCosts - 
+                                       higherCostScenario.data.loanCosts;
+                    
+                    if (monthlyDiff > 0 && upfrontDiff > 0) {
+                        // Calculate breakeven in months
+                        const breakevenMonths = Math.ceil(upfrontDiff / monthlyDiff);
+                        const breakevenYears = (breakevenMonths / 12).toFixed(1);
+                        
+                        breakevenHTML += `<p>The breakeven point between <strong>${lowerCostScenario.name}</strong> and <strong>${higherCostScenario.name}</strong> is approximately <strong>${breakevenYears} years</strong>.</p>`;
+                    }
+                }
+                
+                if (breakevenHTML) {
+                    breakevenText.innerHTML = breakevenHTML;
+                } else {
+                    breakevenText.innerHTML = '<p>No clear breakeven points between scenarios.</p>';
+                }
+                
+                // Generate recommendation
+                const bestLongTerm = sortedScenarios[0];
+                const lowestMonthlyScenario = savedScenarios.reduce((prev, curr) => 
+                    (prev.data.results.totalMonthly < curr.data.results.totalMonthly) ? prev : curr
+                );
+                
+                let recommendation = '';
+                
+                if (stayYears < 5) {
+                    recommendation = `<p>Since you plan to stay in your home for ${stayYears} years, the <strong>${lowestMonthlyScenario.name}</strong> option may be your best choice as it offers the lowest monthly payment at ${formatCurrency(lowestMonthlyScenario.data.results.totalMonthly)} per month.</p>`;
+                    recommendation += `<p>Short-term homeowners typically benefit from lower monthly payments rather than focusing on total loan cost.</p>`;
+                } else if (stayYears >= 5 && stayYears <= 10) {
+                    recommendation = `<p>For your ${stayYears}-year timeframe, the best value is likely <strong>${bestLongTerm.name}</strong> with a total cost of ${formatCurrency(bestLongTerm.data.results.totalWithCosts)}.</p>`;
+                    recommendation += `<p>This balances your monthly payment needs with long-term savings.</p>`;
+                } else {
+                    recommendation = `<p>Since you plan to stay in your home for ${stayYears} years or more, <strong>${bestLongTerm.name}</strong> offers the lowest total cost at ${formatCurrency(bestLongTerm.data.results.totalWithCosts)}.</p>`;
+                    recommendation += `<p>Long-term homeowners typically benefit most from options that minimize the total cost over the life of the loan.</p>`;
+                }
+                
+                recommendationText.innerHTML = recommendation;
+                
+                // Create breakeven chart (simplified for this example)
+                createBreakevenChart(savedScenarios, stayYears);
+            }
+            
+            function createBreakevenChart(scenarios, stayYears) {
+                const ctx = document.getElementById('breakeven-chart').getContext('2d');
+                
+                if (breakevenChart) {
+                    breakevenChart.destroy();
+                }
+                
+                // Create datasets for each scenario
+                const datasets = [];
+                const labels = [];
+                
+                // Generate year labels up to 30 years
+                for (let year = 0; year <= 30; year += 2) {
+                    labels.push(`Year ${year}`);
+                }
+                
+                // Create a dataset for each scenario
+                const colors = ['#34c759', '#5ac8fa', '#ff9500', '#ff3b30', '#5856d6'];
+                
+                scenarios.forEach((scenario, index) => {
+                    const data = [];
+                    const monthlyPayment = scenario.data.results.totalMonthly;
+                    const upfrontCost = scenario.data.loanCosts;
+                    
+                    // Calculate cumulative cost for each year
+                    for (let year = 0; year <= 30; year += 2) {
+                        const months = year * 12;
+                        const cumulativeCost = upfrontCost + (monthlyPayment * months);
+                        data.push(cumulativeCost);
+                    }
+                    
+                    datasets.push({
+                        label: scenario.name,
+                        data: data,
+                        borderColor: colors[index % colors.length],
+                        backgroundColor: 'transparent',
+                        tension: 0.1
+                    });
+                });
+                
+                breakevenChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: datasets
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const value = context.raw;
+                                        return context.dataset.label + ': ' + 
+                                            new Intl.NumberFormat('en-US', {
+                                                style: 'currency',
+                                                currency: 'USD',
+                                                minimumFractionDigits: 0,
+                                                maximumFractionDigits: 0
+                                            }).format(value);
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: {
+                                    display: false
+                                }
+                            },
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return '$' + value.toLocaleString();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            function formatCurrency(value) {
+                return new Intl.NumberFormat('en-US', {
+                    style: 'currency',
+                    currency: 'USD',
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0
+                }).format(value);
+            }
+        });
+    </script>
+</body>
+</html>
